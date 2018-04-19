@@ -10,41 +10,60 @@ def parsing_url(url):
     netloc = urlparse(url).netloc.split('.', -1)[-2]
     return netloc
 
-def create_folder():
-    time_stamp = str(dt.now().year) + str(dt.now().month) + str(dt.now().day)
-    if not os.path.exists(time_stamp):
-        os.makedirs(time_stamp)
-        os.chdir(str(os.getcwd()+ "\\" + time_stamp))
-        cwd = os.getcwd()
-        print("cwd: ", cwd)
-        return cwd
-        #TODO: else? if folder already exists
+def create_folder(url):
+    time_stamp = str(dt.now().year)+str(dt.now().month)+ str(dt.now().day)
+    dir_string = parsing_url(url)
+    # if folder not exists, make one
+    if not os.path.exists(dir_string + "_" + time_stamp):
+        # creating directory with webpage name and timestamp
+        os.makedirs(dir_string + "_" + time_stamp)
+        # changing the working directory
+        os.chdir(str(os.getcwd()+ "\\" + dir_string+ "_" + time_stamp))
+        print("New folder: ", os.getcwd())
+        # if folder already exists, go to the folder
+        return os.getcwd()
+    else:
+        os.chdir(str(os.getcwd()+ "\\" + dir_string+ "_" + time_stamp))
+        print("Folder already exists: ", os.getcwd())
+        return os.getcwd()
 
 def get_pic_title(pic_url):
     title = (pic_url.split('/', -1))[-1].split('?')[0]
     return title
 
-def download_picture(url):
-    unknown_pictures = []
+def create_list_of_sources(url):
+    sources = []
     try:
         r = requests.get(url)
         data = r.text
         soup = bs(data, "lxml")
-        #todo: folder manipulating function
-        os.makedirs(parsing_url(url)+ "_" + str(dt.now().year)+str(dt.now().month)+ str(dt.now().day))
-        os.chdir(str(os.getcwd()+ "\\" + parsing_url(url)+ "_" + str(dt.now().year)+str(dt.now().month)+ str(dt.now().day)))
-        print(os.getcwd())
-        for link in soup.find_all('img'):
-            # extracting the picture link
-            source = link.get('src')
-            #TODO: source isn't always a in a valid, downloadable url format: Unknown url type
-            # concatenating the folder name and the picture title, creating a path
-            fullfilename = os.path.join(os.getcwd(), get_pic_title(source))
-            urllib.request.urlretrieve(str(source), str(fullfilename))
+        images = soup.find_all('img')
+        for tag in images:
+            source = tag.get('src')
+            sources.append(source)
+        return sources
     except Exception as e:
             print(e)
-            # todo: append the pictures with unknown url to a list, move to the next item
 
-#TODO: no such file or directoty (other links)
-
-download_picture('https://www.nytimes.com/')
+def download_picture(url):
+    #todo: getting the webpage url from input
+    # list to store the invalid picture sources
+    unknown_pictures = []
+    # an integer to count the pictures
+    num = 0
+    folder_path = create_folder(url)
+    try:
+        for source in create_list_of_sources(url):
+            # extracting the picture link
+            #source = link.get('src')
+            num +=1
+            print("Picture number ", num, ", ", source)
+            # concatenating the folder name and the picture title, creating a path to every picture
+            fullfilename = os.path.join(folder_path, get_pic_title(source))
+            print(fullfilename)
+            urllib.request.urlretrieve(str(source), str(fullfilename))
+    except Exception:
+        #catching the unknown urls, appending them to a list
+        unknown_pictures.append(source)
+        pass
+    print(unknown_pictures)
