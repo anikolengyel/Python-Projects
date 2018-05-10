@@ -62,8 +62,9 @@ def download_picture():
             url = request.form['url']
             print('url: ', url)
             folder_path = create_folder(url)
-            try:
-                for source in create_list_of_sources(url):
+            url_list = create_list_of_sources(url)
+            for source in url_list:
+                try:
                     # extracting the picture link
                     num +=1
                     print("Picture number ", num, ", ", source)
@@ -71,14 +72,14 @@ def download_picture():
                     fullfilename = os.path.join(folder_path, get_pic_title(source))
                     print(fullfilename)
                     urllib.request.urlretrieve(str(source), str(fullfilename))
-            except Exception:
-                #catching the unknown urls, appending them to a list
-                unknown_pictures.append(source)
-                pass
-            finally:
-                # change the dir back to the original working dir
-                os.chdir("..")
-            print('Unknown pictures: ', unknown_pictures)
+                except Exception:
+                    #catching the unknown urls, appending them to a list
+                    unknown_pictures.append(source)
+                    pass
+                finally:
+                    # change the dir back to the original working dir
+                    os.chdir("..")
+                print('Unknown pictures: ', unknown_pictures)
             return render_template('download_ready.html')
     else:
         return render_template('start_page.html')
