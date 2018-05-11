@@ -1,0 +1,19 @@
+body {
+	padding: 2 em;
+	background-image: url("cement_background.jpg");
+	background-color: #cccccc;
+	margin-top: 11em;
+	font-family: sans-serif;
+}
+
+form {
+	text-align: center;
+}
+
+h2, h4 {
+	text-align: center;
+}
+
+a {
+	color: black;
+}
